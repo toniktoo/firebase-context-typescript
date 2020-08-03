@@ -1,9 +1,9 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Func } from '@tinkoff/utils/typings/types';
 import { Link } from 'react-router-dom';
 
 import { routes } from '../constants/routes';
+import { GlobalContext } from '../context/global';
 
 const Wrapper = styled.div`
   width: 100%;
@@ -14,7 +14,7 @@ const Wrapper = styled.div`
   border-bottom: 1px solid rgb(247, 247, 247);
 `;
 const HeaderContainer = styled.div`
-  max-width: 600px;
+  max-width: 600px; 
   width: 100%;
   display: grid;
   grid-template-columns: 15% 70% 15%;
@@ -57,12 +57,8 @@ const MenuImg = styled.img`
   z-index: 200;
 `;
 
-interface Props {
-  setIsOpenProfile: Func;
-  isOpenProfile: boolean;
-}
-
-const Header = ({ setIsOpenProfile, isOpenProfile }: Props) => {
+const Header = (props) => {
+  const { isOpenProfile, setIsOpenProfile } = React.useContext(GlobalContext);
   return (
     <Wrapper>
       <HeaderContainer>

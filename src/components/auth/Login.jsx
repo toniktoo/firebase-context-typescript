@@ -11,7 +11,7 @@ const Wrapper = styled.div`
 `;
 
 const Login = () => {
-  const { isOpenFormPhone, phoneNumber, toggleAuthForm } = React.useContext(
+  const { isOpenFormPhone, phoneNumber, toggleAuthForm, setAuth } = React.useContext(
     GlobalContext
   );
 
@@ -19,7 +19,7 @@ const Login = () => {
     return isOpenFormPhone ? (
       <FormPhone toggleAuthForm={toggleAuthForm} />
     ) : (
-        <FormCode phoneNumber={phoneNumber}/>
+        <FormCode phoneNumber={phoneNumber} setAuth={setAuth}/>
     );
   };
 

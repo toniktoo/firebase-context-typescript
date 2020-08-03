@@ -5,7 +5,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { GlobalProvider } from './context/global.jsx';
 
 import './index.css';
-import App from './App.jsx';
+import App from './App';
 
 ReactDOM.render(
   <BrowserRouter>

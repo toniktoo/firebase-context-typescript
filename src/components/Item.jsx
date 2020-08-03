@@ -41,12 +41,6 @@ const Price = styled.div`
   outline: none;
 `;
 
-const options = {
-  followCursor: true,
-  shiftX: 20,
-  shiftY: 0,
-};
-
 const Item = ({ meal }) => {
   return (
     <Wrapper>

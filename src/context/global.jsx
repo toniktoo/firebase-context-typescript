@@ -5,6 +5,7 @@ const initState = {
   isOpenProfile: false,
   isOpenFormPhone: true,
   phoneNumber: null,
+  isAuth: false,
 };
 
 export const GlobalContext = createContext(initState);
@@ -25,6 +26,13 @@ export const GlobalProvider = ({ children }) => {
     });
   };
 
+  const setAuth = (isAuth) => {
+    dispatch({
+      type: 'SET_IS_AUTH',
+      payload: isAuth,
+    });
+  };
+
   return (
     <GlobalContext.Provider
       value={{
@@ -33,6 +41,8 @@ export const GlobalProvider = ({ children }) => {
         isOpenFormPhone: state.isOpenFormPhone,
         phoneNumber: state.phoneNumber,
         toggleAuthForm,
+        isAuth: state.isAuth,
+        setAuth,
       }}
     >
       {children}

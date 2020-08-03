@@ -4,8 +4,6 @@ import styled from 'styled-components';
 import { Formik, Field } from 'formik';
 import * as yup from 'yup';
 
-import { onSignInSubmit } from '../../firebase/index';
-
 const Title = styled.h2`
   display: flex;
   align-items: center;
@@ -57,19 +55,19 @@ const PhoneInput = styled(Field)`
 const FormPhone = ({ toggleAuthForm }) => {
   const phoneRegExp = /^((\+7|7|8)+([0-9]){10})$/gm;
   const schema = yup.object().shape({
-    phone: yup.string().matches(phoneRegExp, 'Phone number is not valid'),
+    phone: yup
+      .string()
+      .matches(phoneRegExp, 'Phone number is not valid')
+      .required(),
   });
 
   const onHandleSubmit = (phone) => {
-    console.log(phone);
-    // toggleAuthForm({ isOpenFormPhone: false, phoneNumber: phone });
-    onSignInSubmit();
+    toggleAuthForm({ isOpenFormPhone: false, phoneNumber: phone });
   };
 
   const renderForm = (handleSubmit) => {
     return (
       <form onSubmit={handleSubmit}>
-        <div id="recaptcha-conteiner"></div>
         <Title>НОМЕР ТЕЛЕФОНА 📱, А ЗАТЕМ КОД ИЗ СМС</Title>
         <PhoneInput type="phone" name="phone" placeholder="+7 900 000 00 00" />
         <BtnGetCode type="submit">Получить код</BtnGetCode>

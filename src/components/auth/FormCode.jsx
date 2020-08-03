@@ -1,8 +1,10 @@
 /* eslint-disable jsx-a11y/accessible-emoji */
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useHistory } from 'react-router-dom';
 import styled from 'styled-components';
-import { Formik, Field } from 'formik';
-import * as yup from 'yup';
+import firebase from '../../firebase/index';
+
+import { routes } from '../../constants/routes';
 
 const Title = styled.h2`
   display: flex;
@@ -32,26 +34,19 @@ const TitleWrapper = styled.div`
   align-items: center;
   justify-content: center;
 `;
-const BtnGetCode = styled.h2`
-  color: rgb(238, 238, 238);
-  box-shadow: none;
-  cursor: unset;
-  background: rgb(196, 196, 196);
-  width: 100%;
-  margin-top: 35px;
+const BtnGetCodeRepeat = styled.button`
+  border: none;
+  background: none;
   font-family: Walsheim;
-  text-align: center;
-  color: rgb(255, 255, 255);
-  cursor: pointer;
   font-size: 17px;
-  line-height: 19px;
-  background: rgb(18, 18, 18);
-  border-radius: 40px;
-  padding: 16px;
-  box-sizing: border-box;
+  line-height: 17px;
+  cursor: pointer;
+  padding: 0;
+  color: rgb(17, 17, 17);
+  margin: 20px 0px 0px 0px;
   outline: none;
 `;
-const PhoneInput = styled(Field)`
+const CodeInput = styled.input`
   width: 100%;
   font-family: Walsheim;
   font-weight: 500;
@@ -66,43 +61,81 @@ const PhoneInput = styled(Field)`
   border-radius: 0px;
 `;
 
-const FormCode = ({ phoneNumber }) => {
-  const phoneRegExp = /^((\+7|7|8)+([0-9]){10})$/gm;
-  const schema = yup.object().shape({
-    phone: yup.string().matches(phoneRegExp, 'Phone number is not valid'),
-  });
+const FormCode = ({ phoneNumber, setAuth }) => {
+  const [authCode, setAuthCode] = useState(null);
+  const [codeValue, setCodeValue] = useState('');
+  const history = useHistory();
 
-  const onHandleSubmit = (phone) => {
-    console.log(phone);
-  };
+  useEffect(() => {
+    const sendCodeFirebase = async () => {
+      await setUpRecaptcha();
+      await onSignInSubmitPhone(phoneNumber);
+    };
+    sendCodeFirebase();
+  }, []);
 
-  const renderForm = (handleSubmit) => {
-    return (
-      <form onSubmit={handleSubmit}>
-        <TitleWrapper>
-          <Title>ПРОВЕРЯЙТЕ СМСКИ НА</Title>
-          <PhoneNumber>&nbsp;{phoneNumber}</PhoneNumber>
-        </TitleWrapper>
-        <PhoneInput type="phone" name="phone" placeholder="0 0 0 0 0 0" />
-        <BtnGetCode type="submit">Скиньте код еще раз</BtnGetCode>
-      </form>
+  useEffect(() => {
+    if (codeValue.length === 6) {
+      onSendCodeSubmit(String(codeValue));
+    }
+  }, [codeValue]);
+
+  const setUpRecaptcha = () => {
+    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier(
+      'recaptcha-conteiner',
+      {
+        size: 'invisible',
+        callback: function (response) {
+          // reCAPTCHA solved, allow signInWithPhoneNumber.
+          // onSignInSubmit();
+        },
+      }
     );
   };
+
+  const onSendCodeSubmit = async (code) => {
+    try {
+      const res = await authCode.confirm(code);
+      console.log(res.user);
+      setAuth(true);
+      history.push(routes.home);
+    } catch (err) {
+      alert('Не правильный код. Попробуйте еще раз');
+      console.log(`Code error ${err}`);
+    }
+  };
+
+  const onSignInSubmitPhone = async (phoneNumber) => {
+    try {
+      if (phoneNumber[0] === '8' || phoneNumber[0] === '7') {
+        phoneNumber = '+7' + phoneNumber.slice(1);
+      }
+      const appVerifier = await window.recaptchaVerifier;
+      const auth = await firebase
+        .auth()
+        .signInWithPhoneNumber(phoneNumber, appVerifier);
+      window.confirmationResult = await auth;
+      setAuthCode(await auth);
+    } catch (err) {
+      console.log(`Error phone ${err}`);
+    }
+  };
+
   return (
-    <Formik
-      initialValues={{
-        phone: '',
-      }}
-      validationSchema={() => schema}
-      onSubmit={(values, { setFieldError }) => {
-        const { phone } = values;
-        onHandleSubmit(phone);
-      }}
-    >
-      {({ handleSubmit }) => {
-        return renderForm(handleSubmit);
-      }}
-    </Formik>
+    <form>
+      <div id="recaptcha-conteiner"></div>
+      <TitleWrapper>
+        <Title>ПРОВЕРЯЙТЕ СМСКИ НА</Title>
+        <PhoneNumber>&nbsp;{phoneNumber}</PhoneNumber>
+      </TitleWrapper>
+      <CodeInput
+        type="code"
+        name="code"
+        placeholder="0 0 0 0 0 0"
+        onChange={(ev) => setCodeValue(ev.target.value)}
+      />
+      <BtnGetCodeRepeat>Скиньте код еще раз</BtnGetCodeRepeat>
+    </form>
   );
 };
 

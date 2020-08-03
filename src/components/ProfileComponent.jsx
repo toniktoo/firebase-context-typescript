@@ -1,8 +1,10 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 
+import firebase from '../firebase/index';
 import { routes } from '../constants/routes';
+import { GlobalContext } from '../context/global';
 
 const Wrapper = styled.div`
   position: absolute;
@@ -17,27 +19,27 @@ const Wrapper = styled.div`
   display: flex;
   justify-content: center;
 `;
-const ProfileContainer = styled(Link)`
+const ProfileContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-  cursor: pointer;
   text-align: left;
   width: 100%;
   height: 100px;
   margin-top: 50px;
   padding: 25px 0px;
   background: rgb(217, 86, 64);
-  text-decoration: none;
 `;
-const AuthContainer = styled.div`
+const AuthContainer = styled(Link)`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
   width: 600px;
+  cursor: pointer;
   color: #fff;
+  text-decoration: none;
 `;
 const AuthTitleWrap = styled.div`
   display: flex;
@@ -63,29 +65,72 @@ const AuthSubtitle = styled.h4`
   color: rgb(239, 184, 175);
   margin: 0px;
 `;
+const BtnSignOut = styled.button`
+  border: none;
+  background: none;
+  color: #000;
+  font-size: 30px;
+  font-weight: 700;
+  cursor: pointer;
+`;
 
-const ProfileComponent = ({ isOpenProfile, setIsOpenProfile }) => {
-  if (isOpenProfile) {
+const ProfileComponent = () => {
+  const history = useHistory();
+  const {
+    isOpenProfile,
+    setIsOpenProfile,
+    isAuth,
+    setAuth,
+    toggleAuthForm,
+  } = React.useContext(GlobalContext);
+
+  const handleSignOut = () => {
+    firebase
+      .auth()
+      .signOut()
+      .then(function () {
+        setAuth(false);
+        setIsOpenProfile(false);
+        toggleAuthForm({ isOpenFormPhone: true, phoneNumber: null });
+        history.push(routes.home);
+      })
+      .catch(function (error) {
+        // An error happened.
+      });
+  };
+
+  const renderNoAuthUser = () => {
+    return (
+      <AuthContainer
+        to={routes['login']}
+        onClick={() => setIsOpenProfile(false)}
+      >
+        <AuthTitleWrap>
+          <AuthTitle>Войти</AuthTitle>
+          <AuthArrow src="https://gotovo.ru/static/media/add-phone-arrow.78f0033b.svg"></AuthArrow>
+        </AuthTitleWrap>
+        <AuthSubtitle>Доступ к своим заказам, адресам и бонусам</AuthSubtitle>
+      </AuthContainer>
+    );
+  };
+  const renderAuthUser = () => {
+    return (
+      <div>
+        <BtnSignOut onClick={handleSignOut}>Выйти</BtnSignOut>
+      </div>
+    );
+  };
+
+  const renderProfile = () => {
     return (
       <Wrapper>
-        <ProfileContainer
-          to={routes['login']}
-          onClick={() => setIsOpenProfile(false)}
-        >
-          <AuthContainer>
-            <AuthTitleWrap>
-              <AuthTitle>Войти</AuthTitle>
-              <AuthArrow src="https://gotovo.ru/static/media/add-phone-arrow.78f0033b.svg"></AuthArrow>
-            </AuthTitleWrap>
-
-            <AuthSubtitle>
-              Доступ к своим заказам, адресам и бонусам
-            </AuthSubtitle>
-          </AuthContainer>
+        <ProfileContainer>
+          {isAuth ? renderAuthUser() : renderNoAuthUser()}
         </ProfileContainer>
       </Wrapper>
     );
-  }
-  return null;
+  };
+
+  return isOpenProfile ? renderProfile() : null;
 };
 export default ProfileComponent;

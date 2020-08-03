@@ -2,7 +2,6 @@ import React, { lazy, Suspense } from 'react';
 import styled from 'styled-components';
 import { Switch, Route, Redirect } from 'react-router-dom';
 
-import { GlobalContext } from './context/global.jsx';
 import { routes } from './constants/routes';
 import Header from './components/Header';
 import Content from './components/Content';
@@ -19,19 +18,11 @@ const Wrapper = styled.div`
 `;
 
 const App = () => {
-  const { isOpenProfile, setIsOpenProfile } = React.useContext(GlobalContext);
-
   return (
     <Wrapper>
-      <Header
-        setIsOpenProfile={setIsOpenProfile}
-        isOpenProfile={isOpenProfile}
-      />
+      <Header />
       <Suspense fallback={''}>
-        <ProfileComponent
-          isOpenProfile={isOpenProfile}
-          setIsOpenProfile={setIsOpenProfile}
-        />
+        <ProfileComponent />
       </Suspense>
       <Switch>
         <Route path={routes.home} exact component={Content} />

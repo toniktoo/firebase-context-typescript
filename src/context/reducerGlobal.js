@@ -12,6 +12,11 @@ export default (state, action) => {
         isOpenFormPhone,
         phoneNumber,
       };
+    case 'SET_IS_AUTH':
+      return {
+        ...state,
+        isAuth: action.payload,
+      };
     default:
       return state;
   }
